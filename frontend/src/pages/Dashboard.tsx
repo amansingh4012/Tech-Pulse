@@ -110,7 +110,7 @@ export default function Dashboard() {
             </Link>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {latest.slice(0, 6).map(article => (
+            {latest.slice(0, 6).map((article: any) => (
               <div key={article.id} style={{ paddingBottom: '1rem', borderBottom: '1px solid var(--card-border)' }}>
                 <Link to={`/article/${article.id}`} style={{ textDecoration: 'none', color: 'var(--text-main)', fontWeight: 500, display: 'block', marginBottom: '0.5rem' }}>
                   {article.title}
@@ -160,7 +160,7 @@ export default function Dashboard() {
           <div className="card glass-panel" style={{ flexGrow: 1 }}>
             <h2>🔥 Trending</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {trending.map(article => (
+              {trending.map((article: any) => (
                 <div key={article.id}>
                   <Link to={`/article/${article.id}`} style={{ textDecoration: 'none', color: 'var(--text-main)', fontWeight: 500, display: 'block', fontSize: '0.875rem' }}>
                     {article.title}
