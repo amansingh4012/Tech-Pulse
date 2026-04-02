@@ -1,0 +1,28 @@
+[project]
+name = "tech-pulse"
+version = "1.0.0"
+description = "B2B Tech News Intelligence Platform"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "requests>=2.31.0",
+    "beautifulsoup4>=4.12.3",
+    "lxml>=5.1.0",
+    "pandas>=2.2.1",
+    "sqlalchemy>=2.0.27",
+    "psycopg2-binary>=2.9.9",
+    "fastapi>=0.109.2",
+    "uvicorn[standard]>=0.27.1",
+    "jinja2>=3.1.3",
+    "apscheduler>=3.10.4",
+    "python-dotenv>=1.0.1",
+    "pydantic>=2.6.1",
+    "pydantic-settings>=2.2.1",
+    "loguru>=0.7.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.2",
+    "pytest-asyncio>=0.23.5",
+]
