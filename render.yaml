@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: tech-pulse
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "uvicorn src.api.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: DATABASE_URL
+        sync: false # You will need to explicitly set this in the Render dashboard to your Neon DB
+      - key: LOG_LEVEL
+        value: "INFO"
+      - key: SCRAPE_INTERVAL_HOURS
+        value: "6"
+      - key: CORS_ORIGINS
+        value: "*" # To avoid frontend blockage, or specify your render URL
