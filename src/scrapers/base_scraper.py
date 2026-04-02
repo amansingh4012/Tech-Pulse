@@ -155,32 +155,43 @@ class BaseScraper(ABC):
     def parse_html(self, html: str) -> BeautifulSoup:
         """Parse HTML content into BeautifulSoup object."""
         return BeautifulSoup(html, "lxml")
-    
-    def extract_full_content(self, url: str) -> str:
+
+    def extract_full_content(self, url: str) -> tuple[str, Dict[str, Any]]:
         """
-        Deep scrape a URL using trafilatura to extract the main body text.
-        Bypasses ads, navbars, and cookie banners automatically.
+        Deep scrape a URL using trafilatura to extract the main body text,
+        and also extract metadata like og:image.
         
         Args:
             url: The targeted article URL.
             
         Returns:
-            Extracted main body text, or empty string if failed.
+            Tuple of (extracted_text, metadata_dict).
         """
         self._rate_limit()
         logger.debug(f"Deep scraping content from: {url}")
         
+        metadata = {}
         try:
             downloaded = trafilatura.fetch_url(url)
             if not downloaded:
-                return ""
+                return "", metadata
+                
+            # Extract image_url using BeautifulSoup
+            soup = self.parse_html(downloaded)
+            og_image = soup.find("meta", property="og:image")
+            if og_image and og_image.get("content"):
+                metadata["image_url"] = og_image["content"]
+            else:
+                twitter_image = soup.find("meta", attrs={"name": "twitter:image"})
+                if twitter_image and twitter_image.get("content"):
+                    metadata["image_url"] = twitter_image["content"]
                 
             text = trafilatura.extract(downloaded)
-            return text if text else ""
+            return text if text else "", metadata
             
         except Exception as e:
             logger.error(f"Error extracting content from {url}: {e}")
-            return ""
+            return "", metadata
     
     @abstractmethod
     def scrape(self, max_pages: int = 5) -> List[Dict[str, Any]]:

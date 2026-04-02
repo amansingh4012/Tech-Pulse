@@ -48,7 +48,7 @@ flowchart TB
 
     subgraph Serving Layer
         DB <--> API{"FastAPI Server"}
-        API <--> UI["Web Dashboard\nJinja2 + Tailwind"]
+        API <--> UI["Web Dashboard\nReact + Vite SPA"]
     end
 
     subgraph Consumers
@@ -98,7 +98,8 @@ flowchart TD
 | **Processing** | Pandas, Regex | Data structuring, cleaning, and normalization |
 | **Database** | PostgreSQL (Neon) | Relational cloud storage for scraped articles |
 | **ORM** | SQLAlchemy | Database schema mapping and safe parameterized queries |
-| **API/Backend** | FastAPI, Uvicorn | High-performance async REST API and dashboard serving |
+| **API/Backend** | FastAPI, Uvicorn | High-performance async REST API and static file serving |
+| **Frontend UI** | React, Vite, TypeScript | Modern Single Page Application (SPA) for the dashboard |
 | **Scheduling** | APScheduler | Background cron-job execution for data ingestion |
 | **Logging** | Loguru | Beautiful, structured production logging |
 
@@ -116,8 +117,7 @@ tech-pulse/
 ├── Procfile                  # Production deployment command configuration
 ├── docs/                     # Additional project documentation
 ├── data/                     # Local data storage (caching/temporary files)
-├── static/                   # CSS, JS, and image assets for the dashboard
-├── templates/                # Jinja2 HTML templates for the UI
+├── frontend/                 # React frontend application (Vite, TS)
 ├── tests/                    # Pytest test suite for unit and integration testing
 │   └── test_endpoint.py
 └── src/                      # Source code
@@ -147,12 +147,15 @@ Clone the repository and set up your virtual environment:
 git clone https://github.com/yourusername/tech-pulse.git
 cd tech-pulse
 
-# Create and activate a virtual environment
+# 1. Setup Backend
 python -m venv venv
 source venv/bin/activate  # On Windows use: venv\Scripts\activate
-
-# Install dependencies
 pip install -r requirements.txt
+
+# 2. Setup Frontend
+cd frontend
+npm install
+cd ..
 ```
 
 ### 2. Environment Variables
@@ -179,14 +182,21 @@ SCRAPE_INTERVAL_HOURS="1"
 
 ### 3. Running Locally
 
-Start the entire system (FastAPI server + Background Scheduler) with one command:
+For development, you run the backend and frontend separately:
 
+**Backend (API & Scheduler)**
 ```bash
 python main.py
 ```
+*API running at `http://localhost:8000`.*
+*Swagger docs at `http://localhost:8000/docs`.*
 
-*The dashboard will be available at `http://localhost:8000`.*
-*Swagger API Docs available at `http://localhost:8000/docs`.*
+**Frontend (React UI)**
+```bash
+cd frontend
+npm run dev
+```
+*The dashboard will be available at `http://localhost:5173`.*
 
 ---
 

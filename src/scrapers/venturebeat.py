@@ -115,6 +115,15 @@ class VentureBeatScraper(BaseScraper):
             elif any(word in title_lower for word in ["game", "gaming", "xbox", "playstation"]):
                 detected_category = "Gaming"
             
+            # Extract image if available
+            metadata = {
+                "source_type": "rss",
+                "feed_category": category
+            }
+            media_content = item.find("media:content") or item.find("media:thumbnail")
+            if media_content and media_content.get("url"):
+                metadata["image_url"] = media_content.get("url")
+
             return self._create_article_dict(
                 title=title,
                 url=link,
@@ -124,10 +133,7 @@ class VentureBeatScraper(BaseScraper):
                 summary=summary,
                 category=detected_category,
                 tags=tags,
-                metadata={
-                    "source_type": "rss",
-                    "feed_category": category
-                }
+                metadata=metadata
             )
             
         except Exception as e:

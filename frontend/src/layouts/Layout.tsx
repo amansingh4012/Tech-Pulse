@@ -1,46 +1,48 @@
 import { Outlet, NavLink } from 'react-router-dom';
-import { Activity, BookOpen, FileText } from 'lucide-react';
+import { Activity, BookOpen, LayoutDashboard, Settings } from 'lucide-react';
 
 export default function Layout() {
   return (
     <div className="page-wrapper">
-      <header className="header">
-        <div className="container header-inner">
-          <NavLink to="/" className="brand">
-            <Activity className="brand-icon" size={28} />
-            Tech<span className="text-muted">Pulse</span>
+      {/* Sidebar Navigation */}
+      <aside className="sidebar">
+        <NavLink to="/" className="brand">
+          <Activity className="brand-icon" size={24} />
+          <span>Tech<span className="text-muted">Pulse</span></span>
+        </NavLink>
+        
+        <nav className="nav-links">
+          <NavLink to="/" className={({isActive}) => isActive ? "nav-link active" : "nav-link"}>
+            <LayoutDashboard size={18} />
+            Dashboard
           </NavLink>
-          
-          <nav className="nav-links">
-            <NavLink to="/" className={({isActive}) => isActive ? "nav-link active" : "nav-link"}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Activity size={18} /> Dashboard
-              </span>
-            </NavLink>
-            <NavLink to="/articles" className={({isActive}) => isActive ? "nav-link active" : "nav-link"}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <BookOpen size={18} /> Articles
-              </span>
-            </NavLink>
-            <a href="http://localhost:8000/docs" target="_blank" rel="noreferrer" className="nav-link">
-              <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <FileText size={18} /> API Docs
-              </span>
-            </a>
-          </nav>
+          <NavLink to="/articles" className={({isActive}) => isActive ? "nav-link active" : "nav-link"}>
+            <BookOpen size={18} />
+            All Articles
+          </NavLink>
+        </nav>
+
+        <div style={{ marginTop: 'auto' }}>
+          <a href="http://localhost:8000/docs" target="_blank" rel="noreferrer" className="nav-link" style={{ opacity: 0.7 }}>
+            <Settings size={18} />
+            API Docs
+          </a>
         </div>
-      </header>
+      </aside>
       
-      <main className="main-content container animate-fade-in">
-        <Outlet />
-      </main>
-      
-      <footer className="footer">
-        <div className="container">
-          <p className="text-muted">Tech Pulse — B2B Tech News Intelligence Platform</p>
-          <p className="text-light" style={{ marginTop: '0.5rem' }}>Powered by React, FastAPI, and PostgreSQL</p>
-        </div>
-      </footer>
+      {/* Top and Main Content area */}
+      <div className="main-content-wrapper">
+        <main className="container animate-fade-in">
+          <Outlet />
+        </main>
+        
+        <footer className="footer">
+          <div className="container" style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem 2.5rem' }}>
+            <span>Tech Pulse Intelligence Platform</span>
+            <span>v2.0.0 — Enterprise Edition</span>
+          </div>
+        </footer>
+      </div>
     </div>
   );
 }

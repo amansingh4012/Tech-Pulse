@@ -79,8 +79,9 @@ class TechCrunchScraper(BaseScraper):
                 content = content_soup.get_text(strip=True)
                 
             # Deep scrape if content is missing or suspiciously short
+            page_meta = {}
             if len(content) < 500 and link:
-                extracted_text = self.extract_full_content(link)
+                extracted_text, page_meta = self.extract_full_content(link)
                 if extracted_text:
                     content = extracted_text
             
@@ -91,6 +92,18 @@ class TechCrunchScraper(BaseScraper):
             # Determine primary category
             category = tags[0] if tags else "Tech News"
             
+            # Create metadata base
+            metadata = {
+                "source_type": "rss"
+            }
+            
+            # Try getting image from RSS media:content first
+            media_content = item.find("media:content") or item.find("media:thumbnail")
+            if media_content and media_content.get("url"):
+                metadata["image_url"] = media_content.get("url")
+            elif page_meta and "image_url" in page_meta:
+                metadata["image_url"] = page_meta["image_url"]
+            
             return self._create_article_dict(
                 title=title,
                 url=link,
@@ -100,9 +113,7 @@ class TechCrunchScraper(BaseScraper):
                 summary=summary,
                 category=category,
                 tags=tags,
-                metadata={
-                    "source_type": "rss"
-                }
+                metadata=metadata
             )
             
         except Exception as e:

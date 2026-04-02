@@ -126,23 +126,29 @@ class GitHubTrendingScraper(BaseScraper):
             elif any(word in desc_lower for word in ["security", "privacy", "encrypt"]):
                 category = "Security"
             
+            # Construct OpenGraph image url
+            owner_repo = href.strip("/")
+            
+            metadata={
+                "stars": stars,
+                "forks": forks,
+                "today_stars": today_stars,
+                "language": language,
+                "built_by": built_by,
+                "type": "repository",
+                "image_url": f"https://opengraph.githubassets.com/1/{owner_repo}"
+            }
+            
             return self._create_article_dict(
                 title=repo_name,
                 url=repo_url,
-                author=built_by[0] if built_by else href.split("/")[1] if "/" in href else None,
+                author=built_by[0] if built_by else owner_repo.split("/")[0] if "/" in owner_repo else None,
                 published_at=datetime.now(timezone.utc).isoformat() + "Z",
                 content=description,
                 summary=description[:300] if description else "",
                 category=category,
                 tags=[language] if language != "Unknown" else [],
-                metadata={
-                    "stars": stars,
-                    "forks": forks,
-                    "today_stars": today_stars,
-                    "language": language,
-                    "built_by": built_by,
-                    "type": "repository"
-                }
+                metadata=metadata
             )
             
         except Exception as e:

@@ -82,13 +82,28 @@ class HackerNewsScraper(BaseScraper):
         elif "hiring" in title.lower() or "job" in title.lower():
             category = "Jobs"
         
+        # Make sure page_meta is scoped correctly
+        page_meta = {}
+        
         # Extract full content if available
         content = item.get("text", "") # Usually only present for Ask HN
         if not content and "url" in item:
             # Deep scrape the external article
-            extracted_text = self.extract_full_content(item["url"])
+            extracted_text, page_meta = self.extract_full_content(item["url"])
             if extracted_text:
                 content = extracted_text
+
+        # Create metadata base
+        metadata = {
+            "hn_id": item.get("id"),
+            "score": item.get("score", 0),
+            "comments_count": item.get("descendants", 0),
+            "type": item.get("type")
+        }
+        
+        # Add image from page meta if found
+        if page_meta and "image_url" in page_meta:
+            metadata["image_url"] = page_meta["image_url"]
 
         return self._create_article_dict(
             title=title,
@@ -98,12 +113,7 @@ class HackerNewsScraper(BaseScraper):
             content=content,
             category=category,
             tags=[],
-            metadata={
-                "hn_id": item.get("id"),
-                "score": item.get("score", 0),
-                "comments_count": item.get("descendants", 0),
-                "type": item.get("type")
-            }
+            metadata=metadata
         )
     
     def scrape(self, max_pages: int = 5) -> List[Dict[str, Any]]:

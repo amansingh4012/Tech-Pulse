@@ -106,10 +106,24 @@ class ProductHuntScraper(BaseScraper):
             maker_elem = card_elem.find(class_=re.compile(r"maker|user|author"))
             author = maker_elem.get_text(strip=True) if maker_elem else None
             
+            # Find image
+            img_elem = card_elem.find("img")
+            image_url = None
+            if img_elem:
+                image_url = img_elem.get("src") or img_elem.get("srcset", "").split(" ")[0]
+
             # Extract tags if available
             tag_elems = card_elem.find_all(class_=re.compile(r"topic|tag|category"))
             tags = [t.get_text(strip=True) for t in tag_elems if t.get_text(strip=True)]
             
+            # Create basic metadata
+            metadata = {
+                "upvotes": upvotes,
+                "type": "product"
+            }
+            if image_url:
+                metadata["image_url"] = image_url
+
             return self._create_article_dict(
                 title=title,
                 url=url,
@@ -119,10 +133,7 @@ class ProductHuntScraper(BaseScraper):
                 summary=summary,
                 category="Product Launch",
                 tags=tags,
-                metadata={
-                    "upvotes": upvotes,
-                    "type": "product"
-                }
+                metadata=metadata
             )
             
         except Exception as e:

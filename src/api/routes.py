@@ -42,6 +42,7 @@ class ArticleResponse(BaseModel):
     ai_keywords: List[str] = []
     sentiment: Optional[str] = None
     sentiment_score: Optional[int] = None
+    image_url: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -125,7 +126,8 @@ async def get_articles(
             summary=a.summary[:200] if a.summary else "",
             category=a.category,
             tags=a.tags or [],
-            extra_data=a.extra_data or {}
+            extra_data=a.extra_data or {},
+            image_url=(a.extra_data or {}).get("image_url")
         ) for a in articles],
         total=total,
         page=page,

@@ -320,15 +320,27 @@ class DatabaseManager:
                 func.count(Article.id)
             ).group_by(Article.category).all()
             
-            latest_article = db.query(Article).order_by(
-                desc(Article.scraped_at)
+            latest_scrape = db.query(ScrapeLog).filter(
+                ScrapeLog.completed_at.isnot(None)
+            ).order_by(
+                desc(ScrapeLog.completed_at)
             ).first()
+            
+            last_scraped_time = latest_scrape.completed_at.isoformat() if latest_scrape and latest_scrape.completed_at else None
+            
+            # Fallback to latest article if no logs exist
+            if not last_scraped_time:
+                latest_article = db.query(Article).order_by(
+                    desc(Article.scraped_at)
+                ).first()
+                if latest_article and latest_article.scraped_at:
+                    last_scraped_time = latest_article.scraped_at.isoformat()
             
             return {
                 "total_articles": total_articles,
                 "by_source": {name: count for name, count in by_source},
                 "by_category": {name: count for name, count in by_category},
-                "last_scraped": latest_article.scraped_at.isoformat() if latest_article else None,
+                "last_scraped": last_scraped_time,
             }
     
     @staticmethod
