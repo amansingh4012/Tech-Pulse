@@ -13,6 +13,7 @@ export default function Articles() {
   const { data: statsData } = useQuery({
     queryKey: ['stats'],
     queryFn: fetchStats,
+    refetchInterval: (query) => (query.state.data?.is_scraping ? 3000 : false)
   });
 
   const sources = Object.keys(statsData?.by_source || {});
@@ -61,15 +62,31 @@ export default function Articles() {
   return (
     <div className="articles-container">
       {/* Page Header */}
-      <header className="page-header">
-        <div className="page-header-label">
-          <span className="page-header-line"></span>
-          <span className="page-header-text">Content Hub</span>
+      <header className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <div className="page-header-label">
+            <span className="page-header-line"></span>
+            <span className="page-header-text">Content Hub</span>
+          </div>
+          <h3 className="page-title">Intelligence Feed</h3>
+          <p className="page-description">
+            The central feed for cross-sector innovation. Aggregate insights from global sources filtered through the lens of enterprise intelligence.
+          </p>
         </div>
-        <h3 className="page-title">Intelligence Feed</h3>
-        <p className="page-description">
-          The central feed for cross-sector innovation. Aggregate insights from global sources filtered through the lens of enterprise intelligence.
-        </p>
+
+        {/* Auto Scrape Status Banner */}
+        {statsData?.is_scraping && (
+          <div style={{ 
+            display: 'flex', alignItems: 'center', gap: '0.75rem', 
+            background: 'rgba(99, 102, 241, 0.1)', border: '1px solid var(--primary)', 
+            padding: '0.5rem 1rem', borderRadius: 'var(--radius-md)',
+            animation: 'pulse 2s infinite',
+            marginTop: '1rem'
+          }}>
+            <div className="loader" style={{ width: '16px', height: '16px', borderWidth: '2px', borderColor: 'rgba(255,255,255,0.2)', borderTopColor: 'var(--primary)' }}></div>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--primary)', whiteSpace: 'nowrap' }}>Auto Scrape is Running</span>
+          </div>
+        )}
       </header>
 
       {/* Filters Section */}

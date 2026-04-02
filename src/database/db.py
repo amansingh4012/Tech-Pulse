@@ -336,11 +336,18 @@ class DatabaseManager:
                 if latest_article and latest_article.scraped_at:
                     last_scraped_time = latest_article.scraped_at.isoformat()
             
+            # Check if any scrapers are actively running
+            running_jobs = db.query(ScrapeLog).filter(
+                ScrapeLog.status == "running"
+            ).count()
+            is_scraping = running_jobs > 0
+            
             return {
                 "total_articles": total_articles,
                 "by_source": {name: count for name, count in by_source},
                 "by_category": {name: count for name, count in by_category},
                 "last_scraped": last_scraped_time,
+                "is_scraping": is_scraping,
             }
     
     @staticmethod

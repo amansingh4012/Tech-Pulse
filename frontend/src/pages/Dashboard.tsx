@@ -22,7 +22,8 @@ export default function Dashboard() {
         trending: trendingData?.articles || [] 
       };
     },
-    retry: 1
+    retry: 1,
+    refetchInterval: (query) => (query.state.data?.stats?.is_scraping ? 3000 : false)
   });
 
   const stats = data?.stats;
@@ -65,9 +66,24 @@ export default function Dashboard() {
 
   return (
     <div>
-      <div style={{ marginBottom: '2.5rem' }}>
-        <h1>Tech News Intelligence</h1>
-        <p className="text-muted">Real-time aggregated industry signals and trends.</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem' }}>
+        <div>
+          <h1>Tech News Intelligence</h1>
+          <p className="text-muted">Real-time aggregated industry signals and trends.</p>
+        </div>
+        
+        {/* Auto Scrape Status Banner */}
+        {stats?.is_scraping && (
+          <div style={{ 
+            display: 'flex', alignItems: 'center', gap: '0.75rem', 
+            background: 'rgba(99, 102, 241, 0.1)', border: '1px solid var(--primary)', 
+            padding: '0.5rem 1rem', borderRadius: 'var(--radius-md)',
+            animation: 'pulse 2s infinite'
+          }}>
+            <div className="loader" style={{ width: '16px', height: '16px', borderWidth: '2px', borderColor: 'rgba(255,255,255,0.2)', borderTopColor: 'var(--primary)' }}></div>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--primary)' }}>Auto Scrape is Running</span>
+          </div>
+        )}
       </div>
       
       {/* KPI Cards */}
