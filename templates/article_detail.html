@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}{{ article.title }} — Tech Pulse{% endblock %}
+
+{% block content %}
+<div style="padding: 2rem 0; max-width: 800px; margin: 0 auto;">
+    
+    <div style="margin-bottom: 1rem;">
+        <a href="/articles" class="btn btn-secondary" style="font-size: 0.9rem;">&larr; Back to Articles</a>
+    </div>
+
+    <!-- Article Header -->
+    <h1 style="font-size: 2rem; margin-bottom: 1rem; line-height: 1.3;">{{ article.title }}</h1>
+    
+    <div style="display: flex; flex-wrap: wrap; gap: 1rem; color: var(--text-muted); margin-bottom: 2rem; font-size: 0.95rem;">
+        <span><strong>Source:</strong> {{ article.source_name }}</span>
+        
+        {% if article.author and article.author != 'Unknown' %}
+        <span><strong>Author:</strong> {{ article.author }}</span>
+        {% endif %}
+        
+        {% if article.published_at %}
+        <span><strong>Published:</strong> {{ article.published_at.strftime('%B %d, %Y at %I:%M %p') }}</span>
+        {% endif %}
+    </div>
+    
+    <!-- Meta/Tags Grid -->
+    <div class="card" style="margin-bottom: 2rem; background: var(--border);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+            <div>
+                <strong>Category:</strong> <span class="article-category" style="margin-left: 0.5rem;">{{ article.category }}</span>
+            </div>
+            
+            <div style="display: flex; gap: 1rem;">
+                {% if article.extra_data %}
+                    {% if article.extra_data.score %}
+                    <span title="Score">⬆️ {{ article.extra_data.score }}</span>
+                    {% endif %}
+                    {% if article.extra_data.stars %}
+                    <span title="Stars">⭐ {{ article.extra_data.stars }}</span>
+                    {% endif %}
+                    {% if article.extra_data.comments_count %}
+                    <span title="Comments">💬 {{ article.extra_data.comments_count }}</span>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if article.tags %}
+        <div style="margin-top: 1rem;">
+            {% for tag in article.tags %}
+            <span class="tag">{{ tag }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Summary Content -->
+    {% if article.summary %}
+    <div style="margin-bottom: 2rem;">
+        <h2 style="font-size: 1.25rem; margin-bottom: 0.5rem; border-bottom: 2px solid var(--border); padding-bottom: 0.25rem;">Summary</h2>
+        <p style="font-size: 1.1rem; line-height: 1.6; color: var(--text);">
+            {{ article.summary }}
+        </p>
+    </div>
+    {% endif %}
+
+    <!-- Full Content Preview -->
+    {% if article.content %}
+    <div style="margin-bottom: 2rem;">
+        <h2 style="font-size: 1.25rem; margin-bottom: 0.5rem; border-bottom: 2px solid var(--border); padding-bottom: 0.25rem;">Content Preview</h2>
+        <div style="font-size: 1rem; line-height: 1.7; color: var(--text-muted); white-space: pre-wrap;">{{ article.content }}</div>
+    </div>
+    {% endif %}
+    
+    <!-- AI Features (If any) -->
+    {% if article.ai_category or article.sentiment %}
+    <div class="card" style="margin-bottom: 2rem; border-left: 4px solid var(--primary);">
+        <h3 style="margin-bottom: 0.5rem;">AI Enrichment Data</h3>
+        <p><strong>AI Category:</strong> {{ article.ai_category or 'N/A' }} 
+            {% if article.ai_confidence %}({{ (article.ai_confidence * 100)|round }}% confidence){% endif %}
+        </p>
+        <p><strong>Sentiment:</strong> <span style="text-transform: capitalize;">{{ article.sentiment or 'N/A' }}</span></p>
+        {% if article.ai_keywords %}
+        <div style="margin-top: 0.5rem;">
+            <strong>Keywords:</strong> 
+            {% for kw in article.ai_keywords %}
+            <span class="tag" style="background: rgba(59, 130, 246, 0.2);">{{ kw }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    <!-- Original Source Action -->
+    <div style="margin-top: 3rem; text-align: center; padding: 2rem; background: var(--bg); border: 1px solid var(--border); border-radius: 0.5rem;">
+        <h3 style="margin-bottom: 1rem;">View Full Article</h3>
+        <p style="margin-bottom: 1.5rem; color: var(--text-muted);">To read the complete article, visit the original source publisher.</p>
+        <a href="{{ article.url }}" target="_blank" class="btn" style="padding: 0.75rem 1.5rem; font-size: 1.1rem;">
+            Read Original on {{ article.source_name }} &rarr;
+        </a>
+    </div>
+
+</div>
+{% endblock %}

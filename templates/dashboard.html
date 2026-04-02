@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — Tech Pulse{% endblock %}
+
+{% block content %}
+<div style="padding: 2rem 0;">
+    <h1 style="font-size: 1.75rem; margin-bottom: 0.5rem;">Tech News Intelligence</h1>
+    <p style="color: var(--text-muted);">Real-time aggregated tech news from top sources</p>
+    
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.total_articles }}</div>
+            <div class="stat-label">Total Articles</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.by_source | length }}</div>
+            <div class="stat-label">Active Sources</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.by_category | length }}</div>
+            <div class="stat-label">Categories</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">
+                {% if stats.last_scraped %}
+                    {{ stats.last_scraped[:10] }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </div>
+            <div class="stat-label">Last Updated</div>
+        </div>
+    </div>
+    
+    <!-- Main Content Grid -->
+    <div class="grid grid-2">
+        <!-- Latest Articles -->
+        <div class="card">
+            <div class="card-title">Latest Articles</div>
+            <ul class="article-list">
+                {% for article in articles[:10] %}
+                <li class="article-item">
+                    <a href="/article/{{ article.id }}" class="article-title">
+                        {{ article.title[:80] }}{% if article.title|length > 80 %}...{% endif %}
+                    </a>
+                    <div class="article-meta">
+                        <span class="article-source">{{ article.source_name }}</span>
+                        <span class="article-category">{{ article.category }}</span>
+                        {% if article.published_at %}
+                        <span>{{ article.published_at.strftime('%b %d, %Y') }}</span>
+                        {% endif %}
+                    </div>
+                </li>
+                {% else %}
+                <li class="article-item">No articles yet. Trigger a scrape to get started!</li>
+                {% endfor %}
+            </ul>
+            <div style="margin-top: 1rem;">
+                <a href="/articles" class="btn btn-secondary">View All Articles</a>
+            </div>
+        </div>
+        
+        <!-- Trending Articles -->
+        <div class="card">
+            <div class="card-title">🔥 Trending</div>
+            <ul class="article-list">
+                {% for article in trending[:10] %}
+                <li class="article-item">
+                    <a href="/article/{{ article.id }}" class="article-title">
+                        {{ article.title[:70] }}{% if article.title|length > 70 %}...{% endif %}
+                    </a>
+                    <div class="article-meta">
+                        <span class="article-source">{{ article.source_name }}</span>
+                        {% if article.extra_data %}
+                            {% if article.extra_data.score %}
+                            <span>⬆️ {{ article.extra_data.score }}</span>
+                            {% endif %}
+                            {% if article.extra_data.stars %}
+                            <span>⭐ {{ article.extra_data.stars }}</span>
+                            {% endif %}
+                            {% if article.extra_data.upvotes %}
+                            <span>👍 {{ article.extra_data.upvotes }}</span>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </li>
+                {% else %}
+                <li class="article-item">No trending articles yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Sources and Categories -->
+    <div class="grid grid-2" style="margin-top: 1.5rem;">
+        <!-- By Source -->
+        <div class="card">
+            <div class="card-title">Articles by Source</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                {% for source_name, count in stats.by_source.items() %}
+                <a href="/articles?source={{ source_name }}" 
+                   style="display: flex; justify-content: space-between; padding: 0.5rem 1rem; background: var(--bg); border-radius: 0.375rem; text-decoration: none; color: var(--text); min-width: 150px;">
+                    <span>{{ source_name }}</span>
+                    <span style="color: var(--primary); font-weight: 600;">{{ count }}</span>
+                </a>
+                {% else %}
+                <p style="color: var(--text-muted);">No data yet</p>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- By Category -->
+        <div class="card">
+            <div class="card-title">Articles by Category</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                {% for category, count in stats.by_category.items() %}
+                <a href="/articles?category={{ category }}" 
+                   style="display: flex; justify-content: space-between; padding: 0.5rem 1rem; background: var(--bg); border-radius: 0.375rem; text-decoration: none; color: var(--text); min-width: 150px;">
+                    <span>{{ category }}</span>
+                    <span style="color: var(--primary); font-weight: 600;">{{ count }}</span>
+                </a>
+                {% else %}
+                <p style="color: var(--text-muted);">No data yet</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="card" style="margin-top: 1.5rem;">
+        <div class="card-title">Quick Actions</div>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <button onclick="triggerScrape('hackernews')" class="btn">Scrape Hacker News</button>
+            <button onclick="triggerScrape('techcrunch')" class="btn">Scrape TechCrunch</button>
+            <button onclick="triggerScrape('github_trending')" class="btn">Scrape GitHub Trending</button>
+            <button onclick="triggerFullScrape()" class="btn btn-secondary">Scrape All Sources</button>
+        </div>
+        <p id="scrape-status" style="margin-top: 1rem; color: var(--text-muted);"></p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    async function triggerScrape(source) {
+        const status = document.getElementById('scrape-status');
+        status.textContent = `Scraping ${source}... This may take a minute.`;
+        
+        try {
+            const response = await fetch(`/api/v1/scrape/${source}`, { method: 'POST' });
+            const data = await response.json();
+            
+            if (data.result.error) {
+                status.textContent = `Error: ${data.result.error}`;
+            } else {
+                status.textContent = `✅ ${source}: Added ${data.result.added || 0} new articles`;
+                setTimeout(() => location.reload(), 2000);
+            }
+        } catch (error) {
+            status.textContent = `Error: ${error.message}`;
+        }
+    }
+    
+    async function triggerFullScrape() {
+        const status = document.getElementById('scrape-status');
+        status.textContent = 'Running full scrape... This may take several minutes.';
+        
+        try {
+            const response = await fetch('/api/v1/scrape', { method: 'POST' });
+            const data = await response.json();
+            
+            const totalAdded = data.results.reduce((sum, r) => sum + (r.added || 0), 0);
+            status.textContent = `✅ Full scrape complete! Added ${totalAdded} new articles.`;
+            setTimeout(() => location.reload(), 2000);
+        } catch (error) {
+            status.textContent = `Error: ${error.message}`;
+        }
+    }
+</script>
+{% endblock %}

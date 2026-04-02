@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Articles — Tech Pulse{% endblock %}
+
+{% block content %}
+<div style="padding: 2rem 0;">
+    <h1 style="font-size: 1.75rem; margin-bottom: 1.5rem;">All Articles</h1>
+    
+    <!-- Filters -->
+    <div class="filters">
+        <form action="/articles" method="GET" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <div class="filter-group">
+                <label for="source">Source:</label>
+                <select name="source" id="source" onchange="this.form.submit()">
+                    <option value="">All Sources</option>
+                    {% for source in sources %}
+                    <option value="{{ source.name }}" {% if current_source == source.name %}selected{% endif %}>
+                        {{ source.display_name or source.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="category">Category:</label>
+                <select name="category" id="category" onchange="this.form.submit()">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat }}" {% if current_category == cat %}selected{% endif %}>
+                        {{ cat }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            {% if current_source or current_category %}
+            <a href="/articles" class="btn btn-secondary">Clear Filters</a>
+            {% endif %}
+        </form>
+    </div>
+    
+    <!-- Articles List -->
+    <div class="card">
+        <ul class="article-list">
+            {% for article in articles %}
+            <li class="article-item">
+                <a href="/article/{{ article.id }}" class="article-title">
+                    {{ article.title }}
+                </a>
+                
+                {% if article.summary %}
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0.5rem 0;">
+                    {{ article.summary[:200] }}{% if article.summary|length > 200 %}...{% endif %}
+                </p>
+                {% endif %}
+                
+                <div class="article-meta">
+                    <span class="article-source">{{ article.source_name }}</span>
+                    <span class="article-category">{{ article.category }}</span>
+                    
+                    {% if article.author and article.author != 'Unknown' %}
+                    <span>By {{ article.author }}</span>
+                    {% endif %}
+                    
+                    {% if article.published_at %}
+                    <span>{{ article.published_at.strftime('%b %d, %Y at %H:%M') }}</span>
+                    {% endif %}
+                    
+                    {% if article.extra_data %}
+                        {% if article.extra_data.score %}
+                        <span>⬆️ {{ article.extra_data.score }}</span>
+                        {% endif %}
+                        {% if article.extra_data.stars %}
+                        <span>⭐ {{ article.extra_data.stars }}</span>
+                        {% endif %}
+                        {% if article.extra_data.comments_count %}
+                        <span>💬 {{ article.extra_data.comments_count }}</span>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                
+                {% if article.tags %}
+                <div style="margin-top: 0.5rem;">
+                    {% for tag in article.tags[:5] %}
+                    <span class="tag">{{ tag }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </li>
+            {% else %}
+            <li class="article-item">
+                <p style="color: var(--text-muted);">
+                    No articles found{% if current_source or current_category %} matching your filters{% endif %}.
+                </p>
+                {% if not (current_source or current_category) %}
+                <p style="margin-top: 0.5rem;">
+                    <a href="/" class="btn">Go to Dashboard to trigger a scrape</a>
+                </p>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    
+    <!-- Pagination -->
+    {% if articles %}
+    <div style="display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem;">
+        {% if current_page > 1 %}
+        <a href="/articles?page={{ current_page - 1 }}{% if current_source %}&source={{ current_source }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}" 
+           class="btn btn-secondary">
+            ← Previous
+        </a>
+        {% endif %}
+        
+        <span style="display: flex; align-items: center; color: var(--text-muted);">
+            Page {{ current_page }}
+        </span>
+        
+        {% if has_more %}
+        <a href="/articles?page={{ current_page + 1 }}{% if current_source %}&source={{ current_source }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}" 
+           class="btn btn-secondary">
+            Next →
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
