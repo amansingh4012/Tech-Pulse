@@ -120,16 +120,27 @@ export default function Dashboard() {
           </div>
         </div>
         
-        <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-          <div style={{ padding: '1rem', background: 'rgba(168, 85, 247, 0.15)', borderRadius: 'var(--radius-lg)', color: '#a855f7' }}>
+        <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem', overflow: 'hidden' }}>
+          <div style={{ padding: '1rem', background: 'rgba(168, 85, 247, 0.15)', borderRadius: 'var(--radius-lg)', color: '#a855f7', flexShrink: 0 }}>
             <Activity size={24} />
           </div>
-          <div>
-            <div className="text-muted" style={{ fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Pipeline Gen</div>
-            <div style={{ fontSize: '1.25rem', fontWeight: 600, color: 'white', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ color: 'var(--primary-light)' }}>+{pipeline?.stats?.articles_generated || 0}</span> 
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-light)', fontWeight: 400 }}>(/5s)</span>
+          <div style={{ minWidth: 0, flexGrow: 1 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+              <div className="text-muted" style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Pipeline Gen</div>
+              <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--primary-light)' }}>
+                +{pipeline?.stats?.articles_generated || 0} <span style={{ fontSize: '0.75rem', color: 'var(--text-light)', fontWeight: 400 }}>(/5s)</span>
+              </div>
             </div>
+            {latest[0] ? (
+              <div style={{ fontSize: '0.95rem', color: 'white', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={latest[0].title}>
+                <span style={{ color: 'var(--primary)', opacity: 0.9, marginRight: '6px', fontSize: '0.75rem', textTransform: 'uppercase', padding: '2px 6px', background: 'rgba(99, 102, 241, 0.1)', borderRadius: '4px' }}>
+                  {latest[0].source}
+                </span>
+                {latest[0].title}
+              </div>
+            ) : (
+              <div style={{ fontSize: '0.9rem', color: 'var(--text-light)' }}>Awaiting generation...</div>
+            )}
           </div>
         </div>
       </div>
