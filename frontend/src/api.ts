@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:8000/api/v1';
+const API_BASE = import.meta.env.PROD ? '/api/v1' : 'http://localhost:8000/api/v1';
 
 export async function fetchStats() {
   const res = await fetch(`${API_BASE}/stats`);
