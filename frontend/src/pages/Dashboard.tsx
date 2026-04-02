@@ -68,6 +68,23 @@ export default function Dashboard() {
 
   return (
     <div>
+      <style>
+        {`
+          @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+          }
+          .ticker-text {
+            display: inline-block;
+            whiteSpace: nowrap;
+            animation: marquee 15s linear infinite;
+            padding-left: 100%;
+          }
+          .ticker-text:hover {
+            animation-play-state: paused;
+          }
+        `}
+      </style>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem' }}>
         <div>
           <h1>Tech News Intelligence</h1>
@@ -132,11 +149,15 @@ export default function Dashboard() {
               </div>
             </div>
             {latest[0] ? (
-              <div style={{ fontSize: '0.95rem', color: 'white', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={latest[0].title}>
-                <span style={{ color: 'var(--primary)', opacity: 0.9, marginRight: '6px', fontSize: '0.75rem', textTransform: 'uppercase', padding: '2px 6px', background: 'rgba(99, 102, 241, 0.1)', borderRadius: '4px' }}>
+              <div style={{ fontSize: '0.95rem', color: 'white', display: 'flex', alignItems: 'center', overflow: 'hidden' }} title={latest[0].title}>
+                <span style={{ color: 'var(--primary)', opacity: 0.9, marginRight: '8px', fontSize: '0.75rem', textTransform: 'uppercase', padding: '2px 6px', background: 'rgba(99, 102, 241, 0.1)', borderRadius: '4px', flexShrink: 0, zIndex: 10, position: 'relative' }}>
                   {latest[0].source}
                 </span>
-                {latest[0].title}
+                <div style={{ flexGrow: 1, overflow: 'hidden', position: 'relative', whiteSpace: 'nowrap' }}>
+                  <div className="ticker-text">
+                    {latest[0].title}
+                  </div>
+                </div>
               </div>
             ) : (
               <div style={{ fontSize: '0.9rem', color: 'var(--text-light)' }}>Awaiting generation...</div>
