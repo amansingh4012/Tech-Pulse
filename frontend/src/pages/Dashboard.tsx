@@ -158,7 +158,7 @@ export default function Dashboard() {
           </div>
 
           <div className="card glass-panel" style={{ flexGrow: 1 }}>
-            <h2>🔥 Trending</h2>
+            <h2>Trending Intelligence</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {trending.map((article: any) => (
                 <div key={article.id}>
@@ -167,7 +167,7 @@ export default function Dashboard() {
                   </Link>
                   <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.3rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                     <span>{article.source}</span>
-                    {article.extra_data?.score && <span>⭐ {article.extra_data.score}</span>}
+                    {article.extra_data?.score && <span>Score: {article.extra_data.score}</span>}
                   </div>
                 </div>
               ))}

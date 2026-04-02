@@ -192,17 +192,13 @@ class PipelineScheduler:
                 name="Main Scraping Pipeline",
                 replace_existing=True,
                 max_instances=1,  # Prevent overlapping runs
+                next_run_time=datetime.now(timezone.utc)  # Start immediately on server launch
             )
             
             self.scheduler.start()
             self._is_running = True
-            logger.info(f"Scheduler started. Running every {interval} hours.")
-        
-        # Optionally run immediately for fresh deployments (outside lock to avoid deadlock)
-        if run_immediately:
-            logger.info("Running initial scrape...")
-            self._scheduled_scrape_job()
-    
+            logger.info(f"Scheduler started. Running every {interval} hours and triggered initial run.")
+            
     def stop(self):
         """Stop the scheduler."""
         with self._lock:
