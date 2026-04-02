@@ -43,3 +43,9 @@ export async function triggerFullScrape() {
   if (!res.ok) throw new Error('Failed to run full scrape');
   return res.json();
 }
+
+export async function fetchPipelineStatus() {
+  const res = await fetch(`${API_BASE}/pipeline/status`);
+  if (!res.ok) throw new Error('Failed to fetch pipeline status');
+  return res.json();
+}

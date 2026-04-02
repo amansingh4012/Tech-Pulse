@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { BarChart3, Clock, Database, Layers, RefreshCw, Zap, TrendingUp, ChevronRight, Activity } from 'lucide-react';
-import { fetchStats, fetchTrending, fetchArticles, triggerFullScrape, triggerScrape } from '../api';
-import { formatDistanceToNow } from 'date-fns';
+import { BarChart3, Database, Layers, RefreshCw, Zap, TrendingUp, ChevronRight, Activity } from 'lucide-react';
+import { fetchStats, fetchTrending, fetchArticles, triggerFullScrape, triggerScrape, fetchPipelineStatus } from '../api';
 
 export default function Dashboard() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -11,24 +10,27 @@ export default function Dashboard() {
   const { data, isLoading: loading, isError, error } = useQuery({
     queryKey: ['dashboardData'],
     queryFn: async () => {
-      const [statsData, latestData, trendingData] = await Promise.all([
+      const [statsData, latestData, trendingData, pipelineData] = await Promise.all([
         fetchStats(),
         fetchArticles({ page: 1 }),
-        fetchTrending(10)
+        fetchTrending(10),
+        fetchPipelineStatus()
       ]);
       return { 
         stats: statsData, 
         latest: latestData?.articles || [], 
-        trending: trendingData?.articles || [] 
+        trending: trendingData?.articles || [],
+        pipeline: pipelineData
       };
     },
     retry: 1,
-    refetchInterval: (query) => (query.state.data?.stats?.is_scraping ? 3000 : false)
+    refetchInterval: 5000 // Refetch every 5s to sync with the new pipeline ticker
   });
 
   const stats = data?.stats;
   const latest = data?.latest || [];
   const trending = data?.trending || [];
+  const pipeline = data?.pipeline;
 
   const handleScrape = async (source: string) => {
     setActionLoading(source);
@@ -73,7 +75,7 @@ export default function Dashboard() {
         </div>
         
         {/* Auto Scrape Status Banner */}
-        {stats?.is_scraping && (
+        {pipeline?.is_running && (
           <div style={{ 
             display: 'flex', alignItems: 'center', gap: '0.75rem', 
             background: 'rgba(99, 102, 241, 0.1)', border: '1px solid var(--primary)', 
@@ -81,7 +83,7 @@ export default function Dashboard() {
             animation: 'pulse 2s infinite'
           }}>
             <div className="loader" style={{ width: '16px', height: '16px', borderWidth: '2px', borderColor: 'rgba(255,255,255,0.2)', borderTopColor: 'var(--primary)' }}></div>
-            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--primary)' }}>Auto Scrape is Running</span>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--primary)' }}>Automated Pipeline Live (Queue: {pipeline?.queue_size})</span>
           </div>
         )}
       </div>
@@ -120,12 +122,13 @@ export default function Dashboard() {
         
         <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
           <div style={{ padding: '1rem', background: 'rgba(168, 85, 247, 0.15)', borderRadius: 'var(--radius-lg)', color: '#a855f7' }}>
-            <Clock size={24} />
+            <Activity size={24} />
           </div>
           <div>
-            <div className="text-muted" style={{ fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Last Scrape</div>
-            <div style={{ fontSize: '1.25rem', fontWeight: 600, color: 'white' }}>
-              {stats?.last_scraped ? formatDistanceToNow(new Date(stats.last_scraped), { addSuffix: true }) : 'N/A'}
+            <div className="text-muted" style={{ fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Pipeline Gen</div>
+            <div style={{ fontSize: '1.25rem', fontWeight: 600, color: 'white', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ color: 'var(--primary-light)' }}>+{pipeline?.stats?.articles_generated || 0}</span> 
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-light)', fontWeight: 400 }}>(/5s)</span>
             </div>
           </div>
         </div>
