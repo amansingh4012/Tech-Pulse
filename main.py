@@ -45,7 +45,7 @@ def main():
         "src.api.main:app",
         host=settings.api_host,
         port=settings.api_port,
-        reload=False,  # Set to True for development
+        reload=True,  # Auto-reload enabled for development
         log_level="info"
     )
 

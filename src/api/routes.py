@@ -11,17 +11,13 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from loguru import logger
 import os
-import sys
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from database import DatabaseManager, get_db
-from scheduler import get_scheduler
+from src.database import DatabaseManager, get_db
+from src.scheduler import get_scheduler
 
 
-# Setup templates
-templates_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "templates")
-templates = Jinja2Templates(directory=templates_dir)
+# Setup
+# Removed Jinja templates to decouple the backend for a React frontend
 
 router = APIRouter()
 
@@ -264,84 +260,8 @@ async def trigger_full_scrape():
     }
 
 
-# ============ HTML Dashboard ============
-
-@router.get("/", response_class=HTMLResponse, tags=["Dashboard"])
-async def dashboard(request: Request):
-    """
-    Main dashboard page.
-    """
-    stats = DatabaseManager.get_stats()
-    articles = DatabaseManager.get_articles(limit=20)
-    trending = DatabaseManager.get_trending_articles(limit=10)
-    sources = DatabaseManager.get_sources()
-    
-    return templates.TemplateResponse(
-        request=request,
-        name="dashboard.html",
-        context={
-            "stats": stats,
-            "articles": articles,
-            "trending": trending,
-            "sources": sources,
-        }
-    )
-
-
-@router.get("/articles", response_class=HTMLResponse, tags=["Dashboard"])
-async def articles_page(
-    request: Request,
-    source: Optional[str] = None,
-    category: Optional[str] = None,
-    page: int = 1
-):
-    """
-    Articles listing page with filtering.
-    """
-    page_size = 30
-    offset = (page - 1) * page_size
-    
-    articles = DatabaseManager.get_articles(
-        source=source,
-        category=category,
-        limit=page_size,
-        offset=offset
-    )
-    
-    stats = DatabaseManager.get_stats()
-    sources = DatabaseManager.get_sources()
-    categories = list(stats["by_category"].keys())
-    
-    return templates.TemplateResponse(
-        request=request,
-        name="articles.html",
-        context={
-            "articles": articles,
-            "sources": sources,
-            "categories": categories,
-            "current_source": source,
-            "current_category": category,
-            "current_page": page,
-            "has_more": len(articles) == page_size,
-        }
-    )
-
-
-@router.get("/article/{article_id}", response_class=HTMLResponse, tags=["Dashboard"])
-async def article_detail_page(request: Request, article_id: int):
-    """
-    Detailed standalone page for a single article.
-    """
-    article = DatabaseManager.get_article_by_id(article_id)
-    
-    if not article:
-        return HTMLResponse(content="<h1>Article not found</h1>", status_code=404)
-    
-    return templates.TemplateResponse(
-        request=request,
-        name="article_detail.html",
-        context={"article": article}
-    )
+# ============ Dashboard/Frontend ============
+# Removed Jinja HTML templates; client now heavily relies on the React built frontend.
 
 
 # ============ AI Insights Endpoints (Bonus Feature) ============
@@ -355,9 +275,9 @@ async def get_ai_insights():
     and keyword frequency analysis.
     """
     from sqlalchemy import func
-    from database import DatabaseManager
-    from database.db import get_db_session
-    from database.models import Article
+    from src.database import DatabaseManager
+    from src.database.db import get_db_session
+    from src.database.models import Article
     
     with get_db_session() as session:
         # Sentiment distribution
@@ -418,8 +338,8 @@ async def get_articles_by_sentiment(
     """
     Get articles by sentiment (positive, negative, neutral).
     """
-    from database.db import get_db_session
-    from database.models import Article
+    from src.database.db import get_db_session
+    from src.database.models import Article
     
     valid_sentiments = ["positive", "negative", "neutral"]
     if sentiment not in valid_sentiments:
