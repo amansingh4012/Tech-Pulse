@@ -29,31 +29,31 @@
 ```mermaid
 flowchart TB
     subgraph Data Sources
-        S1[Hacker News]
-        S2[TechCrunch]
-        S3[VentureBeat]
+        S1["Hacker News"]
+        S2["TechCrunch"]
+        S3["VentureBeat"]
     end
 
     subgraph Data Engineering Pipeline & Automation
-        SCHED((APScheduler\nTrigger)) -->|Hourly Cron| Scraper
+        SCHED(("APScheduler\nTrigger")) -->|"Hourly Cron"| Scraper
         
-        Scraper[Trafilatura + BeautifulSoup\nDeep Scraper] -->|Raw HTML| RawStorage[(Temp File Storage)]
-        RawStorage --> Cleaner[Data Cleaning Engine\nPandas + RegEx]
-        Cleaner --> Structuring[Metadata Extraction]
+        Scraper["Trafilatura + BeautifulSoup\nDeep Scraper"] -->|"Raw HTML"| RawStorage[("Temp File Storage")]
+        RawStorage --> Cleaner["Data Cleaning Engine\nPandas + RegEx"]
+        Cleaner --> Structuring["Metadata Extraction"]
     end
 
     subgraph Storage Layer
-        Structuring --> DB[(Neon PostgreSQL\nCloud Database)]
+        Structuring --> DB[("Neon PostgreSQL\nCloud Database")]
     end
 
     subgraph Serving Layer
-        DB <--> API{FastAPI Server}
-        API <--> UI[Web Dashboard\nJinja2 + Tailwind]
+        DB <--> API{"FastAPI Server"}
+        API <--> UI["Web Dashboard\nJinja2 + Tailwind"]
     end
 
     subgraph Consumers
-        UI --> EndUser((B2B User / Analyst))
-        API --> B2BSystem[Enterprise CRM / Alerting]
+        UI --> EndUser(("B2B User / Analyst"))
+        API --> B2BSystem["Enterprise CRM / Alerting"]
     end
 
     S1 --> Scraper
@@ -67,23 +67,23 @@ flowchart TB
 
 ```mermaid
 flowchart TD
-    Start[Scheduler Triggers Pipeline] --> Init[Initialize Sources List]
-    Init --> Fetch[HTTP GET Request to Source URLs]
-    Fetch --> Check1{Status 200?}
-    Check1 -- No --> Retry[Exponential Backoff Retry]
-    Retry --> Check2{Max Retries Exceeded?}
-    Check2 -- Yes --> LogError[Log Failure & Skip]
+    Start["Scheduler Triggers Pipeline"] --> Init["Initialize Sources List"]
+    Init --> Fetch["HTTP GET Request to Source URLs"]
+    Fetch --> Check1{"Status 200?"}
+    Check1 -- No --> Retry["Exponential Backoff Retry"]
+    Retry --> Check2{"Max Retries Exceeded?"}
+    Check2 -- Yes --> LogError["Log Failure & Skip"]
     Check2 -- No --> Fetch
     
-    Check1 -- Yes --> Extract[Extract Article Links (Pagination)]
-    Extract --> Parse[Parse HTML Content]
-    Parse --> Clean{Has Missing Critical Fields?}
-    Clean -- Yes --> Skip[Mark as Invalid & Skip]
-    Clean -- No --> RemoveNoise[Trafilatura: Strip Menus, Ads, JS]
-    RemoveNoise --> Sanitize[Sanitize Text & Normalize Dates]
+    Check1 -- Yes --> Extract["Extract Article Links (Pagination)"]
+    Extract --> Parse["Parse HTML Content"]
+    Parse --> Clean{"Has Missing Critical Fields?"}
+    Clean -- Yes --> Skip["Mark as Invalid & Skip"]
+    Clean -- No --> RemoveNoise["Trafilatura: Strip Menus, Ads, JS"]
+    RemoveNoise --> Sanitize["Sanitize Text & Normalize Dates"]
     
-    Sanitize --> Upsert[Upsert to Neon PostgreSQL]
-    Upsert --> Success[Pipeline Run Complete]
+    Sanitize --> Upsert["Upsert to Neon PostgreSQL"]
+    Upsert --> Success["Pipeline Run Complete"]
     LogError --> Success
 ```
 
