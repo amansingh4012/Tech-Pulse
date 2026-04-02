@@ -19,6 +19,12 @@ class Settings(BaseSettings):
     request_timeout: int = 30
     max_retries: int = 3
     
+    # ── Automated Pipeline Settings ──
+    enable_auto_scrape: bool = True  # Master switch for the automated pipeline
+    max_articles: int = 100  # Hard cap: only keep this many articles in DB
+    ticker_interval_seconds: int = 5  # Generate 1 article every N seconds
+    producer_interval_seconds: int = 90  # Refill queue from sources every N seconds
+    
     # API
     api_host: str = "0.0.0.0"
     api_port: int = 8000

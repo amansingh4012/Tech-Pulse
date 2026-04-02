@@ -195,6 +195,7 @@ class DatabaseManager:
                             author=article_data.get("author"),
                             published_at=_parse_datetime(article_data.get("published_at")),
                             scraped_at=_parse_datetime(article_data.get("scraped_at")) or datetime.now(timezone.utc),
+                            generated_at=_parse_datetime(article_data.get("generated_at")) or datetime.now(timezone.utc),
                             content=article_data.get("content", ""),
                             summary=article_data.get("summary", ""),
                             content_length=article_data.get("content_length", 0),
@@ -376,6 +377,47 @@ class DatabaseManager:
             )
             db.add(log)
             db.commit()
+    
+    @staticmethod
+    def prune_articles(max_count: int = 100) -> int:
+        """
+        Enforce article cap by deleting oldest articles.
+        
+        Keeps only the newest `max_count` articles in the database.
+        Deletes based on `generated_at` timestamp (most recent kept).
+        
+        Args:
+            max_count: Maximum number of articles to keep
+            
+        Returns:
+            Number of articles deleted
+        """
+        with get_db_session() as db:
+            total = db.query(func.count(Article.id)).scalar()
+            
+            if total <= max_count:
+                return 0
+            
+            # Find the cutoff: keep the newest max_count articles
+            # Get the generated_at of the Nth newest article
+            cutoff_article = db.query(Article).order_by(
+                desc(Article.generated_at)
+            ).offset(max_count - 1).first()
+            
+            if not cutoff_article or not cutoff_article.generated_at:
+                return 0
+            
+            # Delete everything older than the cutoff
+            deleted = db.query(Article).filter(
+                Article.generated_at < cutoff_article.generated_at
+            ).delete(synchronize_session='fetch')
+            
+            db.commit()
+            
+            if deleted > 0:
+                logger.info(f"Pruned {deleted} articles. DB now has {total - deleted} articles (cap: {max_count})")
+            
+            return deleted
 
 
 def _parse_datetime(value) -> Optional[datetime]:

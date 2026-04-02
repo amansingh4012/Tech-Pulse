@@ -7,7 +7,6 @@ from typing import Optional, List
 from datetime import datetime
 from fastapi import APIRouter, Query, HTTPException, Request, Depends, Path
 from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from loguru import logger
 import os
@@ -17,8 +16,6 @@ from src.scheduler import get_scheduler
 
 
 # Setup
-# Removed Jinja templates to decouple the backend for a React frontend
-
 router = APIRouter()
 
 
@@ -32,6 +29,7 @@ class ArticleResponse(BaseModel):
     url: str
     author: Optional[str]
     published_at: Optional[str]
+    generated_at: Optional[str] = None  # Pipeline generation timestamp
     summary: Optional[str]
     category: Optional[str]
     tags: List[str] = []
@@ -103,7 +101,7 @@ async def get_articles(
     articles = DatabaseManager.get_articles(
         source=source,
         category=category,
-        limit=page_size + 1,  # Fetch one extra to check if there's more
+        limit=page_size + 1,
         offset=offset
     )
     
@@ -111,7 +109,6 @@ async def get_articles(
     if has_more:
         articles = articles[:page_size]
     
-    # Get total count (simplified - in production, use a separate count query)
     stats = DatabaseManager.get_stats()
     total = stats["total_articles"]
     
@@ -123,6 +120,7 @@ async def get_articles(
             url=a.url,
             author=a.author,
             published_at=a.published_at.isoformat() if a.published_at else None,
+            generated_at=a.generated_at.isoformat() if a.generated_at else None,
             summary=a.summary[:200] if a.summary else "",
             category=a.category,
             tags=a.tags or [],
@@ -142,8 +140,6 @@ async def get_trending_articles(
 ):
     """
     Get trending articles based on engagement metrics.
-    
-    Returns articles sorted by score, upvotes, stars, etc.
     """
     articles = DatabaseManager.get_trending_articles(limit=limit)
     
@@ -156,9 +152,7 @@ async def get_trending_articles(
 @router.get("/api/v1/articles/{article_id}", tags=["Articles"])
 async def get_article(article_id: int = Path(..., ge=1, description="Article ID must be positive")):
     """
-    Get a single article by ID.
-    
-    Returns full article content and metadata.
+    Get a single article by ID with full content.
     """
     article = DatabaseManager.get_article_by_id(article_id)
     
@@ -170,9 +164,7 @@ async def get_article(article_id: int = Path(..., ge=1, description="Article ID 
 
 @router.get("/api/v1/sources", response_model=List[SourceResponse], tags=["Sources"])
 async def get_sources():
-    """
-    Get list of all news sources.
-    """
+    """Get list of all news sources."""
     sources = DatabaseManager.get_sources()
     
     return [SourceResponse(
@@ -186,11 +178,7 @@ async def get_sources():
 
 @router.get("/api/v1/stats", response_model=StatsResponse, tags=["Stats"])
 async def get_stats():
-    """
-    Get platform statistics.
-    
-    Returns counts by source and category, plus last scrape time.
-    """
+    """Get platform statistics."""
     stats = DatabaseManager.get_stats()
     
     return StatsResponse(
@@ -203,9 +191,7 @@ async def get_stats():
 
 @router.get("/api/v1/categories", tags=["Categories"])
 async def get_categories():
-    """
-    Get list of all article categories.
-    """
+    """Get list of all article categories."""
     stats = DatabaseManager.get_stats()
     categories = list(stats["by_category"].keys())
     
@@ -215,16 +201,43 @@ async def get_categories():
     }
 
 
+# ============ Pipeline Monitoring Endpoints ============
+
+@router.get("/api/v1/pipeline/status", tags=["Pipeline"])
+async def get_pipeline_status():
+    """
+    Get the full status of the automated pipeline.
+    
+    Returns queue size, generation stats, job schedules, and config.
+    No manual intervention needed — this endpoint shows what the pipeline
+    is doing automatically.
+    """
+    scheduler = get_scheduler()
+    return scheduler.get_status()
+
+
+@router.get("/api/v1/pipeline/health", tags=["Pipeline"])
+async def get_pipeline_health():
+    """
+    Pipeline health check.
+    
+    Returns:
+    - **healthy**: Pipeline is running and generating articles
+    - **degraded**: Pipeline is running but has issues
+    - **stopped**: Pipeline is not running
+    """
+    scheduler = get_scheduler()
+    return scheduler.get_health()
+
+
 # ============ Manual Scrape Endpoints ============
-# TODO: Add rate limiting to these endpoints to prevent abuse
-# Consider using slowapi or similar for production deployments
 
 @router.post("/api/v1/scrape/{source}", response_model=ScrapeResponse, tags=["Scraping"])
 async def trigger_scrape(source: str):
     """
     Manually trigger a scrape for a specific source.
     
-    Available sources: hackernews, techcrunch, producthunt, github_trending, venturebeat
+    NOTE: The automated pipeline handles this automatically.
     """
     scheduler = get_scheduler()
     
@@ -235,7 +248,7 @@ async def trigger_scrape(source: str):
         )
     
     logger.info(f"Manual scrape triggered for {source}")
-    result = scheduler.run_scraper(source, max_pages=2)
+    result = scheduler.run_scraper(source, max_pages=1)
     
     return ScrapeResponse(
         message=f"Scrape completed for {source}",
@@ -249,12 +262,12 @@ async def trigger_full_scrape():
     """
     Manually trigger a scrape for all sources.
     
-    This runs all scrapers sequentially.
+    NOTE: The automated pipeline handles this automatically.
     """
     scheduler = get_scheduler()
     
     logger.info("Manual full scrape triggered")
-    results = scheduler.run_all_scrapers(max_pages=2)
+    results = scheduler.run_all_scrapers(max_pages=1)
     
     return {
         "message": "Full scrape completed",
@@ -262,27 +275,16 @@ async def trigger_full_scrape():
     }
 
 
-# ============ Dashboard/Frontend ============
-# Removed Jinja HTML templates; client now heavily relies on the React built frontend.
-
-
-# ============ AI Insights Endpoints (Bonus Feature) ============
+# ============ AI Insights Endpoints ============
 
 @router.get("/api/v1/ai/insights", tags=["AI"])
 async def get_ai_insights():
-    """
-    Get AI-powered insights and analytics.
-    
-    Returns aggregated sentiment analysis, trending AI categories,
-    and keyword frequency analysis.
-    """
+    """Get AI-powered insights and analytics."""
     from sqlalchemy import func
-    from src.database import DatabaseManager
     from src.database.db import get_db_session
     from src.database.models import Article
     
     with get_db_session() as session:
-        # Sentiment distribution
         sentiment_counts = session.query(
             Article.sentiment, func.count(Article.id)
         ).filter(
@@ -291,7 +293,6 @@ async def get_ai_insights():
         
         sentiment_distribution = {s[0]: s[1] for s in sentiment_counts}
         
-        # AI category distribution (high confidence only)
         ai_category_counts = session.query(
             Article.ai_category, func.count(Article.id)
         ).filter(
@@ -301,7 +302,6 @@ async def get_ai_insights():
         
         ai_categories = {c[0]: c[1] for c in ai_category_counts}
         
-        # Average confidence by category
         avg_confidence = session.query(
             Article.category, func.avg(Article.ai_confidence)
         ).filter(
@@ -310,7 +310,6 @@ async def get_ai_insights():
         
         confidence_by_category = {c[0]: round(c[1], 2) if c[1] else 0 for c in avg_confidence}
         
-        # Most common AI keywords (aggregate from JSON array)
         articles_with_keywords = session.query(Article.ai_keywords).filter(
             Article.ai_keywords.isnot(None)
         ).limit(500).all()
@@ -337,9 +336,7 @@ async def get_articles_by_sentiment(
     sentiment: str,
     limit: int = Query(default=20, ge=1, le=100)
 ):
-    """
-    Get articles by sentiment (positive, negative, neutral).
-    """
+    """Get articles by sentiment (positive, negative, neutral)."""
     from src.database.db import get_db_session
     from src.database.models import Article
     
@@ -357,7 +354,6 @@ async def get_articles_by_sentiment(
             Article.sentiment_score.desc() if sentiment == "positive" else Article.sentiment_score.asc()
         ).limit(limit).all()
         
-        # Expunge articles before returning to detach from session
         result_articles = [a.to_summary_dict() for a in articles]
         
         return {

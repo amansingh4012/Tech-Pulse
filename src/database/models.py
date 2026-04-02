@@ -88,6 +88,9 @@ class Article(Base):
     sentiment = Column(String(20))  # positive, negative, neutral
     sentiment_score = Column(Integer, default=0)  # -100 to 100
     
+    # Pipeline timestamp — when this article was generated/inserted by the automated pipeline
+    generated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    
     # Timestamps
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
@@ -114,6 +117,7 @@ class Article(Base):
             "author": self.author,
             "published_at": self.published_at.isoformat() if self.published_at else None,
             "scraped_at": self.scraped_at.isoformat() if self.scraped_at else None,
+            "generated_at": self.generated_at.isoformat() if self.generated_at else None,
             "content": self.content,
             "summary": self.summary,
             "category": self.category,
@@ -137,6 +141,7 @@ class Article(Base):
             "url": self.url,
             "author": self.author,
             "published_at": self.published_at.isoformat() if self.published_at else None,
+            "generated_at": self.generated_at.isoformat() if self.generated_at else None,
             "summary": self.summary[:200] if self.summary else "",
             "category": self.category,
             "tags": self.tags or [],

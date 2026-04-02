@@ -24,18 +24,23 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting Tech Pulse API...")
     
-    # Initialize database
+    # Initialize database tables
     init_db()
     
-    # Start scheduler for automated scraping
-    scheduler = get_scheduler()
-    scheduler.start()
+    # Start the fully automated pipeline
+    # No manual intervention needed after this point
+    if settings.enable_auto_scrape:
+        scheduler = get_scheduler()
+        scheduler.start()
+        logger.info("✅ Automated pipeline started — generating 1 article every 5 seconds")
+    else:
+        logger.warning("⚠️  Auto-scrape is DISABLED. Set ENABLE_AUTO_SCRAPE=true to enable.")
     
     logger.info("Tech Pulse API started successfully")
     
     yield
     
-    # Shutdown
+    # Shutdown — graceful cleanup
     logger.info("Shutting down Tech Pulse API...")
     scheduler = get_scheduler()
     scheduler.stop()

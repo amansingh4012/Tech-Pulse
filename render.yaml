@@ -6,10 +6,23 @@ services:
     startCommand: "uvicorn src.api.main:app --host 0.0.0.0 --port $PORT"
     envVars:
       - key: DATABASE_URL
-        sync: false # You will need to explicitly set this in the Render dashboard to your Neon DB
+        sync: false # Set this in the Render dashboard to your Neon DB
       - key: LOG_LEVEL
         value: "INFO"
-      - key: SCRAPE_INTERVAL_HOURS
-        value: "6"
+      - key: ENABLE_AUTO_SCRAPE
+        value: "true"
+      - key: MAX_ARTICLES
+        value: "100"
+      - key: TICKER_INTERVAL_SECONDS
+        value: "5"
       - key: CORS_ORIGINS
-        value: "*" # To avoid frontend blockage, or specify your render URL
+        value: "*"
+
+  # Keep-alive cron job — pings health endpoint every 10 minutes
+  # Ensures the Render service stays warm and the pipeline keeps running
+  - type: cron
+    name: tech-pulse-keepalive
+    env: python
+    schedule: "*/10 * * * *"
+    buildCommand: "pip install requests"
+    startCommand: "python -c \"import requests; r=requests.get('https://tech-pulse.onrender.com/api/v1/pipeline/health'); print(r.json())\""
