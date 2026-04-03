@@ -187,6 +187,11 @@ class DataCleaner:
             "removed": removed,
             "timestamp": datetime.now(timezone.utc).isoformat()
         })
+        
+        # Keep log size bounded to prevent memory leaks
+        if len(self.cleaning_log) > 1000:
+            self.cleaning_log = self.cleaning_log[-500:]
+            
         if removed > 0:
             logger.debug(f"{operation}: removed {removed} records")
     

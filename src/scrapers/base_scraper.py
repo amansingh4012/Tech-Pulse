@@ -158,7 +158,7 @@ class BaseScraper(ABC):
 
     def extract_full_content(self, url: str) -> tuple[str, Dict[str, Any]]:
         """
-        Deep scrape a URL using trafilatura to extract the main body text,
+        Deep scrape a URL to extract the main body text,
         and also extract metadata like og:image.
         
         Args:
@@ -172,10 +172,14 @@ class BaseScraper(ABC):
         
         metadata = {}
         try:
-            downloaded = trafilatura.fetch_url(url)
-            if not downloaded:
+            # Use our managed session instead of trafilatura.fetch_url to prevent 
+            # connection leaks and uncontrolled memory usage in Trafilatura's internal caches.
+            response = self.fetch_page(url)
+            if not response or not response.text:
                 return "", metadata
                 
+            downloaded = response.text
+            
             # Extract image_url using BeautifulSoup
             soup = self.parse_html(downloaded)
             og_image = soup.find("meta", property="og:image")
@@ -186,7 +190,13 @@ class BaseScraper(ABC):
                 if twitter_image and twitter_image.get("content"):
                     metadata["image_url"] = twitter_image["content"]
                 
+            # trafilatura.extract does the text parsing
             text = trafilatura.extract(downloaded)
+            
+            # Explicitly delete objects to free memory quickly
+            del soup
+            del response
+            
             return text if text else "", metadata
             
         except Exception as e:

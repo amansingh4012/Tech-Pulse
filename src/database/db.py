@@ -174,10 +174,11 @@ class DatabaseManager:
                     
                     if existing:
                         # Update existing article — map field names correctly
-                        field_map = {"metadata": "extra_data"}
+                        field_map = {"metadata": "extra_data", "source": "source_name"}
                         for key, value in article_data.items():
                             db_key = field_map.get(key, key)
-                            if db_key not in ["id", "created_at"] and hasattr(existing, db_key):
+                            # Protect relationships and ID fields from being overwritten
+                            if db_key not in ["id", "created_at", "source", "source_id"] and hasattr(existing, db_key):
                                 setattr(existing, db_key, value)
                         existing.updated_at = datetime.now(timezone.utc)
                         stats["updated"] += 1
