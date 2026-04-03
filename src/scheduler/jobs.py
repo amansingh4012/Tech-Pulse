@@ -65,7 +65,7 @@ class PipelineScheduler:
         "hackernews": HackerNewsScraper,
         "techcrunch": TechCrunchScraper,
         "producthunt": ProductHuntScraper,
-        "github_trending": GitHubTrendingScraper,
+        # "github_trending": GitHubTrendingScraper, # Temporarily paused
         "venturebeat": VentureBeatScraper,
     }
 

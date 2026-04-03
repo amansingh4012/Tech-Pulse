@@ -31,6 +31,36 @@ export default function ArticleDetail() {
   const authorName = article.author && article.author !== 'Unknown' ? article.author : 'Tech Pulse Intel';
   const authorInitials = authorName.substring(0, 2).toUpperCase();
 
+  const formatContent = (text: string) => {
+    if (!text) return '<p>No payload content extracted.</p>';
+    // If it contains basic HTML structure, use it as is
+    if (text.includes('<p>') || text.includes('<br')) return text;
+    
+    // It's raw plain text.
+    // Try to split by explicit line breaks first
+    if (text.includes('\\n\\n') || text.includes('\n\n')) {
+      const parts = text.includes('\\n\\n') ? text.split('\\n\\n') : text.split('\n\n');
+      return parts.filter(p => p.trim()).map(p => `<p>${p.trim()}</p>`).join('');
+    }
+    
+    // Otherwise, chunk by sentences to break up the wall of text
+    const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+    if (sentences.length < 4) return `<p>${text}</p>`;
+    
+    let html = '';
+    let currentParagraph = '';
+    for (let i = 0; i < sentences.length; i++) {
+        currentParagraph += sentences[i].trim() + ' ';
+        if ((i + 1) % 4 === 0 || i === sentences.length - 1) {
+            html += `<p style="margin-bottom: 1.5rem; line-height: 1.8;">${currentParagraph.trim()}</p>`;
+            currentParagraph = '';
+        }
+    }
+    return html;
+  };
+
+  const articleText = article.content || article.summary || '';
+  
   return (
     <div className="article-detail-container">
       <div className="back-btn-wrapper">
@@ -97,7 +127,7 @@ export default function ArticleDetail() {
         <div 
           className="article-body"
           dangerouslySetInnerHTML={{ 
-            __html: DOMPurify.sanitize(article.content || article.summary || '<p>No payload content extracted.</p>') 
+            __html: DOMPurify.sanitize(formatContent(articleText)) 
           }} 
         />
         
