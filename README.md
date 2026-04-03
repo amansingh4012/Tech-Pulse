@@ -18,7 +18,7 @@
 
 ## 🚀 Live Demo
 
-[**Access the Live Production Dashboard Here**](https://example-tech-pulse-demo.up.railway.app) (Placeholder Link)
+[**Access the Live Production Dashboard Here**](https://tech-pulse-46y8.onrender.com/) (LIVE LINK)
 
 ![Tech Pulse Dashboard](https://via.placeholder.com/1000x500?text=Tech+Pulse+Dashboard+Screenshot)
 
