@@ -20,17 +20,10 @@
 
 [**Access the Live Production Dashboard Here**](https://tech-pulse-46y8.onrender.com/) (LIVE LINK)
 
-### Demo Video
-<<<<<<< HEAD
-<video controls src="https://github.com/amansingh4012/Tech-Pulse/raw/main/Recording%202026%2004%2003%20125022%20(1).mp4" width="100%"></video>
-
-*(If the video player doesn't load above, you can [click here to download and watch the demo video](https://github.com/amansingh4012/Tech-Pulse/raw/main/Recording%202026%2004%2003%20125022%20(1).mp4))*
-=======
-
-
-<video controls src="https://github.com/amansingh4012/Tech-Pulse/blob/main/Recording%202026-04-03%20125022%20(1).mp4" width="100%"></video>
->>>>>>> 1c7033bfcc843d2c1f515170d149961285c97007
-
+![Tech Pulse Dashboard](https://github.com/amansingh4012/Tech-Pulse/blob/main/Screenshot%202026-04-03%20111008.png)
+![Tech Pulse ALL Article](https://github.com/amansingh4012/Tech-Pulse/blob/main/Screenshot%202026-04-03%20111520.png)
+![Tech Pulse Content](https://github.com/amansingh4012/Tech-Pulse/blob/main/Screenshot%202026-04-03%20112020.png)
+![Tech Pulse SourcePage](https://github.com/amansingh4012/Tech-Pulse/blob/main/Screenshot%202026-04-03%20112221.png)
 ---
 
 ## 🏗 Architecture Diagram
