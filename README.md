@@ -21,13 +21,10 @@
 [**Access the Live Production Dashboard Here**](https://tech-pulse-46y8.onrender.com/) (LIVE LINK)
 
 ### Demo Video
-*(Please insert your video link below)*
+<video controls src="https://github.com/amansingh4012/Tech-Pulse/raw/main/Recording%202026%2004%2003%20125022%20(1).mp4" width="100%"></video>
 
-<video controls src="YOUR_VIDEO_LINK_HERE.mp4" width="100%"></video>
+*(If the video player doesn't load above, you can [click here to download and watch the demo video](https://github.com/amansingh4012/Tech-Pulse/raw/main/Recording%202026%2004%2003%20125022%20(1).mp4))*
 
-<!-- If using YouTube, you can use the following format instead:
-[![Demo Video Placeholder](https://img.youtube.com/vi/YOUR_YOUTUBE_ID/maxresdefault.jpg)](https://youtu.be/YOUR_YOUTUBE_ID)
--->
 ---
 
 ## 🏗 Architecture Diagram
