@@ -149,14 +149,14 @@ export default function Dashboard() {
               </div>
             </div>
             {latest[0] ? (
-              <div style={{ fontSize: '0.95rem', color: 'white', display: 'flex', alignItems: 'center', overflow: 'hidden' }} title={latest[0].title}>
-                <span style={{ color: 'var(--primary)', opacity: 0.9, marginRight: '8px', fontSize: '0.75rem', textTransform: 'uppercase', padding: '2px 6px', background: 'rgba(99, 102, 241, 0.1)', borderRadius: '4px', flexShrink: 0, zIndex: 10, position: 'relative' }}>
-                  {latest[0].source}
-                </span>
-                <div style={{ flexGrow: 1, overflow: 'hidden', position: 'relative', whiteSpace: 'nowrap' }}>
-                  <div className="ticker-text">
+              <div style={{ width: '100%', overflow: 'hidden', whiteSpace: 'nowrap', position: 'relative', height: '24px', display: 'flex', alignItems: 'center' }} title={latest[0].title}>
+                <div className="ticker-text" style={{ display: 'flex', alignItems: 'center' }}>
+                  <span style={{ color: 'var(--primary)', opacity: 0.9, marginRight: '8px', fontSize: '0.75rem', textTransform: 'uppercase', padding: '2px 6px', background: 'rgba(99, 102, 241, 0.1)', borderRadius: '4px', flexShrink: 0 }}>
+                    {latest[0].source}
+                  </span>
+                  <span style={{ fontSize: '0.95rem', color: 'white' }}>
                     {latest[0].title}
-                  </div>
+                  </span>
                 </div>
               </div>
             ) : (
