@@ -20,7 +20,7 @@
 
 [**Access the Live Production Dashboard Here**](https://tech-pulse-46y8.onrender.com/) (LIVE LINK)
 
-![Tech Pulse Dashboard](https://via.placeholder.com/1000x500?text=Tech+Pulse+Dashboard+Screenshot)
+![Tech Pulse Dashboard](https://github.com/amansingh4012/Tech-Pulse/blob/main/Screenshot%202026-04-03%20111008.png)
 
 ---
 
