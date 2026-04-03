@@ -30,6 +30,28 @@ class ProductHuntScraper(BaseScraper):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.rate_limit_delay = 2.0  # Be respectful
+        
+    def fetch_page(self, url: str) -> Optional[Any]:
+        """
+        Fetch page using curl_cffi to bypass Cloudflare bot protection.
+        Override from BaseScraper because Product Hunt heavily blocks standard requests.
+        """
+        try:
+            from curl_cffi import requests as cffi_requests
+        except ImportError:
+            logger.error("curl_cffi not installed. Cannot bypass Product Hunt Cloudflare protections. Run 'pip install curl_cffi'")
+            return None
+            
+        self._rate_limit()
+        logger.debug(f"Fetching (curl_cffi impersonate): {url}")
+        try:
+            # Impersonate Chrome to perfectly replicate TLS fingerprints
+            response = cffi_requests.get(url, impersonate="chrome110", timeout=self.timeout)
+            response.raise_for_status()
+            return response
+        except Exception as e:
+            logger.error(f"HTTP error fetching (curl_cffi) {url}: {e}")
+            return None
     
     def _extract_json_data(self, html: str) -> Optional[Dict]:
         """

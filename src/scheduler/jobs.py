@@ -72,9 +72,9 @@ class PipelineScheduler:
     SOURCE_ORDER = list(SCRAPERS.keys())
 
     # Limits
-    MAX_ARTICLES = 100  # Hard cap on DB size
-    TICKER_INTERVAL_SECONDS = 5  # 1 article per 5 seconds
-    PRODUCER_INTERVAL_SECONDS = 90  # Refill queue every 90 seconds
+    MAX_ARTICLES = settings.max_articles  # Hard cap on DB size
+    TICKER_INTERVAL_SECONDS = settings.ticker_interval_seconds  # Time between article generations
+    PRODUCER_INTERVAL_SECONDS = settings.producer_interval_seconds  # Refill queue every N seconds
     QUEUE_LOW_WATERMARK = 10  # Trigger early refill when queue drops below this
 
     def __init__(self):

@@ -14,7 +14,7 @@ services:
       - key: MAX_ARTICLES
         value: "100"
       - key: TICKER_INTERVAL_SECONDS
-        value: "5"
+        value: "30"
       - key: CORS_ORIGINS
         value: "*"
 
