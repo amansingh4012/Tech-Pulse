@@ -75,7 +75,7 @@ class PipelineScheduler:
     MAX_ARTICLES = settings.max_articles  # Hard cap on DB size
     TICKER_INTERVAL_SECONDS = settings.ticker_interval_seconds  # Time between article generations
     PRODUCER_INTERVAL_SECONDS = settings.producer_interval_seconds  # Refill queue every N seconds
-    QUEUE_LOW_WATERMARK = 10  # Trigger early refill when queue drops below this
+    QUEUE_LOW_WATERMARK = 1  # Trigger refill only when queue hits exactly 0
 
     def __init__(self):
         """Initialize the scheduler."""
@@ -87,7 +87,7 @@ class PipelineScheduler:
             }
         )
         self.cleaner = DataCleaner()
-        self._queue: deque = deque(maxlen=500)  # Buffered article queue
+        self._queue: deque = deque(maxlen=10)  # Buffered article queue, max 10 items
         self._is_running = False
         self._lock = threading.Lock()
         self._source_index = 0  # Round-robin pointer
@@ -115,8 +115,12 @@ class PipelineScheduler:
         """
         Producer: Scrapes a batch of articles from the next source
         and pushes them into the internal queue.
-        Runs automatically every PRODUCER_INTERVAL_SECONDS.
+        Runs automatically every PRODUCER_INTERVAL_SECONDS but waits if queue > 0.
         """
+        if len(self._queue) > 0:
+            logger.debug(f"[PRODUCER] Queue has {len(self._queue)} items. Waiting until it is 0 before scraping again.")
+            return
+
         source_name = self._get_next_source()
         logger.info(f"[PRODUCER] Scraping batch from: {source_name} (queue size: {len(self._queue)})")
 
@@ -138,6 +142,9 @@ class PipelineScheduler:
             # Push into queue
             added = 0
             for article in raw_articles:
+                if len(self._queue) >= 10:
+                    break  # Enforce strict 10 item cap
+                
                 # Tag with the source for tracking
                 article["_source_name"] = source_name
                 self._queue.append(article)
@@ -158,9 +165,9 @@ class PipelineScheduler:
             self._stats["scrapes_failed"] += 1
 
     def _emergency_refill(self):
-        """Force an immediate producer run if queue is critically low."""
-        if len(self._queue) < self.QUEUE_LOW_WATERMARK:
-            logger.warning(f"[WATCHDOG] Queue critically low ({len(self._queue)}). Emergency refill...")
+        """Force an immediate producer run if queue is empty."""
+        if len(self._queue) == 0:
+            logger.warning(f"[WATCHDOG] Queue is completely empty. Emergency refill triggering 10 new items...")
             self._producer_job()
 
     # ── Consumer: Article Ticker ─────────────────────────────────────────
