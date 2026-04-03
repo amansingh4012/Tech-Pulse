@@ -21,9 +21,9 @@
 [**Access the Live Production Dashboard Here**](https://tech-pulse-46y8.onrender.com/) (LIVE LINK)
 
 ### Demo Video
-*(Please insert your video link below)*
 
-<video controls src="YOUR_VIDEO_LINK_HERE.mp4" width="100%"></video>
+
+<video controls src="https://github.com/amansingh4012/Tech-Pulse/blob/main/Recording%202026-04-03%20125022%20(1).mp4" width="100%"></video>
 
 <!-- If using YouTube, you can use the following format instead:
 [![Demo Video Placeholder](https://img.youtube.com/vi/YOUR_YOUTUBE_ID/maxresdefault.jpg)](https://youtu.be/YOUR_YOUTUBE_ID)
