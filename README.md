@@ -21,7 +21,9 @@
 [**Access the Live Production Dashboard Here**](https://tech-pulse-46y8.onrender.com/) (LIVE LINK)
 
 ![Tech Pulse Dashboard](https://github.com/amansingh4012/Tech-Pulse/blob/main/Screenshot%202026-04-03%20111008.png)
-
+![Tech Pulse ALL Article](https://github.com/amansingh4012/Tech-Pulse/blob/main/Screenshot%202026-04-03%20111520.png)
+![Tech Pulse Content](https://github.com/amansingh4012/Tech-Pulse/blob/main/Screenshot%202026-04-03%20112020.png)
+![Tech Pulse SourcePage](https://github.com/amansingh4012/Tech-Pulse/blob/main/Screenshot%202026-04-03%20112221.png)
 ---
 
 ## 🏗 Architecture Diagram
